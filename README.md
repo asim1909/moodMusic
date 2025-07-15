@@ -30,12 +30,12 @@
 
 ## 🤝 Collaborators
 
-| Name         | GitHub                                      | Email                |
-|--------------|---------------------------------------------|----------------------|
-| Your Name    | [@yourusername](https://github.com/yourusername) | yourname@example.com |
-| Teammate     | [@teammate](https://github.com/teammate)         | teammate@example.com |
+| Name            | GitHub                                            | Email                     |
+|-----------------|---------------------------------------------------|---------------------------|
+| Asim Rana       | [@asim1909](https://github.com/asim1909)          | work.asimrana@gmail.com   |
+| Sudheer kumar   |                                                   |                           |
+| Akash Mishra    |                                                   |                           |
 
-> Add more rows if needed
 
 ---
 
@@ -52,7 +52,7 @@
 ## 🚧 Installation & Running Locally
 
 ```bash
-git clone https://github.com/yourusername/your-repo-name.git
+git clone https://github.com/asim1909/moodMusic.git
 cd your-repo-name
 npm install
 npm start
