@@ -1,6 +1,5 @@
 # 🚀 MoodMusicApp
 
-![App Banner](https://via.placeholder.com/1200x400.png?text=MoodMusicApp+Banner)  
 *A beautiful, mood-based music player powered by the Spotify API.*
 
 ---
