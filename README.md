@@ -9,7 +9,7 @@
 
 | Home Page | Playlist | Player |
 |-----------|----------|--------|
-| ![Home](assets/home_screen.png) | ![Playlist](assets/playlist.png) | ![Player](assets/player.png) |
+| ![Home](./assets/Home_Page.jpg) | ![Playlist](./assets/Playlist.jpg) | ![Player](./assets/Player.jpg) |
 
 ---
 
