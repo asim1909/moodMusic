@@ -5,9 +5,14 @@ const PlayerContext = createContext();
 export const PlayerProvider = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentPlaylist, setCurrentPlaylist] = useState([]);
 
-  const playTrack = (track) => {
+  // Accepts: playTrack(track, playlist)
+  const playTrack = (track, playlist) => {
     setCurrentTrack(track);
+    if (playlist && Array.isArray(playlist)) {
+      setCurrentPlaylist(playlist);
+    }
     setIsPlaying(true);
   };
 
@@ -19,19 +24,21 @@ export const PlayerProvider = ({ children }) => {
 
   // New: next/prev track logic
   const nextTrack = (trackList) => {
-    if (!currentTrack || !trackList?.length) return;
-    const idx = trackList.findIndex(t => t.id === currentTrack.id);
-    if (idx !== -1 && idx < trackList.length - 1) {
-      setCurrentTrack(trackList[idx + 1]);
+    const list = trackList && trackList.length ? trackList : currentPlaylist;
+    if (!currentTrack || !list?.length) return;
+    const idx = list.findIndex(t => t.id === currentTrack.id);
+    if (idx !== -1 && idx < list.length - 1) {
+      setCurrentTrack(list[idx + 1]);
       setIsPlaying(true);
     }
   };
 
   const prevTrack = (trackList) => {
-    if (!currentTrack || !trackList?.length) return;
-    const idx = trackList.findIndex(t => t.id === currentTrack.id);
+    const list = trackList && trackList.length ? trackList : currentPlaylist;
+    if (!currentTrack || !list?.length) return;
+    const idx = list.findIndex(t => t.id === currentTrack.id);
     if (idx > 0) {
-      setCurrentTrack(trackList[idx - 1]);
+      setCurrentTrack(list[idx - 1]);
       setIsPlaying(true);
     }
   };
@@ -43,6 +50,7 @@ export const PlayerProvider = ({ children }) => {
     togglePlayback,
     nextTrack,
     prevTrack,
+    currentPlaylist,
   };
 
   return (

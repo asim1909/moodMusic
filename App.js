@@ -1,18 +1,14 @@
-// App.js
-// This is the main entry point of the application.
-// It sets up navigation and the overall structure.
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Heart, Home, Search } from 'lucide-react-native';
+import { fetchSpotifyNewReleases } from './spotifyApi';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PlayerProvider, usePlayer } from './PlayerContext';
 import { useIsFocused } from '@react-navigation/native';
 
-// Import Screens
 import HomeScreen from './screens/HomeScreen';
 import PlaylistScreen from './screens/PlaylistScreen';
 import PlayerScreen from './screens/PlayerScreen';
@@ -23,14 +19,9 @@ import SearchScreen from './screens/SearchScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// --- Mock Data ---
-// In a real app, this would come from an API
-
-// --- Main Tab Navigator ---
-const MainTabs = () => {
+const MainTabs = ({ spotifyReleases }) => {
   const { currentTrack } = usePlayer();
   const isFocused = useIsFocused();
-  // Only show MiniPlayer if not on Player screen (modal is not focused)
   return (
     <>
       <Tab.Navigator
@@ -54,22 +45,23 @@ const MainTabs = () => {
         <Tab.Screen
           name="Home"
           component={HomeScreen}
+          initialParams={{ spotifyReleases }}
           options={{
-            tabBarIcon: ({ color, size }) => <Home color={color} size={size} />, 
+            tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
           }}
         />
         <Tab.Screen
           name="Search"
           component={SearchScreen}
           options={{
-            tabBarIcon: ({ color, size }) => <Search color={color} size={size} />, 
+            tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
           }}
         />
         <Tab.Screen
           name="Favorites"
           component={FavoritesScreen}
           options={{
-            tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />, 
+            tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
           }}
         />
       </Tab.Navigator>
@@ -78,34 +70,46 @@ const MainTabs = () => {
   );
 };
 
-// --- Main App Stack Navigator ---
-const AppStack = () => {
+const AppStack = ({ spotifyReleases }) => {
   return (
-    <>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen name="Playlist" component={PlaylistScreen} />
-        <Stack.Screen 
-          name="Player" 
-          component={PlayerScreen} 
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-          }}
-        />
-      </Stack.Navigator>
-    </>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Main">
+        {() => <MainTabs spotifyReleases={spotifyReleases} />}
+      </Stack.Screen>
+      <Stack.Screen name="Playlist" component={PlaylistScreen} />
+      <Stack.Screen
+        name="Player"
+        component={PlayerScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+    </Stack.Navigator>
   );
 };
 
-// --- Root Component ---
 export default function App() {
+  const [spotifyReleases, setSpotifyReleases] = useState(null);
+
+  useEffect(() => {
+    async function getSpotifyData() {
+      try {
+        const data = await fetchSpotifyNewReleases();
+        setSpotifyReleases(data);
+      } catch (error) {
+        console.error('Error fetching Spotify data:', error);
+      }
+    }
+    getSpotifyData();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PlayerProvider>
         <NavigationContainer>
           <StatusBar barStyle="light-content" />
-          <AppStack />
+          <AppStack spotifyReleases={spotifyReleases} />
         </NavigationContainer>
       </PlayerProvider>
     </GestureHandlerRootView>

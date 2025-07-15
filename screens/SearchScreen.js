@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, SafeAreaView, ActivityIndicator, Animated } from 'react-native';
 import MOCK_DATA from './MOCK_DATA';
 import { usePlayer } from '../PlayerContext';
+import { fetchSpotifyTracksByMood, fetchSpotifyNewReleases } from '../spotifyApi';
 
 const SPOTIFY_GREEN = '#1DB954';
 
@@ -10,24 +11,111 @@ const allSongs = Object.values(MOCK_DATA.playlists).flat();
 
 const SearchScreen = ({ navigation }) => {
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [newReleases, setNewReleases] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { playTrack } = usePlayer();
 
-  const filteredSongs = allSongs.filter(song =>
-    song.title.toLowerCase().includes(query.toLowerCase()) ||
-    song.artist.toLowerCase().includes(query.toLowerCase())
-  );
+  // Fetch new releases on mount
+  React.useEffect(() => {
+    let cancelled = false;
+    const fetchReleases = async () => {
+      setLoading(true);
+      try {
+        const tracks = await fetchSpotifyNewReleases();
+        const formatted = tracks.map(item => ({
+          id: item.id,
+          title: item.name,
+          artist: item.artists.map(a => a.name).join(', '),
+          artwork: item.images && item.images[0]?.url ? item.images[0].url : (item.album?.images[0]?.url || ''),
+          duration_ms: item.duration_ms,
+        }));
+        if (!cancelled) setNewReleases(formatted);
+      } catch (e) {
+        if (!cancelled) setNewReleases([]);
+      }
+      if (!cancelled) setLoading(false);
+    };
+    fetchReleases();
+    return () => { cancelled = true; };
+  }, []);
 
-  const handleSongPress = (song) => {
-    playTrack(song);
-    navigation.navigate('Player');
+  // Search Spotify API only when query changes
+  React.useEffect(() => {
+    let cancelled = false;
+    const search = async () => {
+      if (!query) {
+        setResults([]);
+        return;
+      }
+      setLoading(true);
+      try {
+        const tracks = await fetchSpotifyTracksByMood(query);
+        // Format API tracks
+        const apiResults = tracks.map(item => ({
+          id: item.id,
+          title: item.name,
+          artist: item.artists.map(a => a.name).join(', '),
+          artwork: item.album.images[0]?.url,
+          duration_ms: item.duration_ms,
+        }));
+        if (!cancelled) setResults(apiResults);
+      } catch (e) {
+        if (!cancelled) setResults([]);
+      }
+      if (!cancelled) setLoading(false);
+    };
+    search();
+    return () => { cancelled = true; };
+  }, [query]);
+
+  const handleSongPress = (song, playlist) => {
+    playTrack(song, playlist);
+    navigation.navigate('Player', { playlist });
+  };
+
+  // Marquee component for long song titles
+  const MarqueeText = ({ children, style, containerWidth = 180, speed = 50 }) => {
+    const textRef = useRef();
+    const [textWidth, setTextWidth] = useState(0);
+    const anim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      if (textWidth > containerWidth) {
+        const distance = textWidth - containerWidth + 24;
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(anim, { toValue: -distance, duration: (distance / speed) * 1000, useNativeDriver: true }),
+            Animated.timing(anim, { toValue: 0, duration: 0, useNativeDriver: true }),
+            Animated.delay(1000),
+          ])
+        ).start();
+      } else {
+        anim.setValue(0);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [textWidth, containerWidth, children]);
+
+    return (
+      <View style={{ width: containerWidth, overflow: 'hidden', flexDirection: 'row' }}>
+        <Animated.Text
+          ref={textRef}
+          onLayout={e => setTextWidth(e.nativeEvent.layout.width)}
+          style={[style, { transform: [{ translateX: anim }] }]}
+          numberOfLines={1}
+        >
+          {children}
+        </Animated.Text>
+      </View>
+    );
   };
 
   const renderSong = ({ item }) => (
-    <TouchableOpacity style={styles.songItem} onPress={() => handleSongPress(item)}>
+    <TouchableOpacity style={styles.songItem} onPress={() => handleSongPress(item, results)}>
       <Image source={{ uri: item.artwork }} style={styles.artwork} />
       <View>
-        <Text style={styles.songTitle}>{item.title}</Text>
-        <Text style={styles.songArtist}>{item.artist}</Text>
+        <MarqueeText style={styles.songTitle} containerWidth={200}>{item.title}</MarqueeText>
+        <MarqueeText style={styles.songArtist} containerWidth={200}>{item.artist}</MarqueeText>
       </View>
     </TouchableOpacity>
   );
@@ -39,21 +127,25 @@ const SearchScreen = ({ navigation }) => {
         <TextInput
           style={styles.input}
           placeholder="What do you want to listen to?"
-          placeholderTextColor="#b3b3b3"
+          placeholderTextColor="#a3a3a3"
           value={query}
           onChangeText={setQuery}
         />
-        <FlatList
-          data={filteredSongs}
-          renderItem={renderSong}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={<Text style={styles.emptyText}>No results found.</Text>}
-          contentContainerStyle={[
-            styles.listContent,
-            filteredSongs.length === 0 ? { flex: 1, justifyContent: 'center' } : null,
-          ]}
-          keyboardShouldPersistTaps="handled"
-        />
+        {loading ? (
+          <ActivityIndicator color={SPOTIFY_GREEN} style={{ marginTop: 40 }} />
+        ) : (
+          <FlatList
+            data={query ? results : newReleases}
+            renderItem={renderSong}
+            keyExtractor={item => item.id}
+            ListEmptyComponent={<Text style={styles.emptyText}>{query ? 'No results found.' : 'No music to show.'}</Text>}
+            contentContainerStyle={[
+              styles.listContent,
+              (query ? results : newReleases).length === 0 ? { flex: 1, justifyContent: 'center' } : null,
+            ]}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -62,73 +154,64 @@ const SearchScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: 'black', // Matches provided style
   },
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 40, // Increased for more space from top
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 0,
   },
   header: {
     color: 'white',
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 18,
-    marginTop: 16, // Increased for more space from top
+    marginBottom: 24,
+    marginTop: 16,
   },
   input: {
-    backgroundColor: '#181818',
+    backgroundColor: '#222', // Matches songItem background for consistency
     color: 'white',
-    borderRadius: 12,
-    paddingHorizontal: 18,
+    borderRadius: 8,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 18,
-    marginBottom: 18,
-    borderWidth: 2,
-    borderColor: SPOTIFY_GREEN,
-    marginTop: 2,
+    fontSize: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   songItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 16,
-    backgroundColor: '#181818',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    backgroundColor: '#222', // Matches provided style
   },
   artwork: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    marginRight: 18,
-    backgroundColor: '#222',
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    marginRight: 16,
   },
   songTitle: {
     color: 'white',
     fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
+    fontWeight: '600',
   },
   songArtist: {
-    color: '#b3b3b3',
-    fontSize: 15,
-    marginTop: 2,
+    color: '#a3a3a3',
+    fontSize: 14,
   },
   emptyText: {
-    color: '#b3b3b3',
+    color: '#a3a3a3',
     textAlign: 'center',
     marginTop: 40,
-    fontSize: 18,
   },
   listContent: {
     paddingTop: 8,
-    paddingBottom: 120, // Enough for MiniPlayer + tab bar
+    paddingBottom: 54, // Matches provided style
   },
 });
 
-export default SearchScreen; 
+export default SearchScreen;
