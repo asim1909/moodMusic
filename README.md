@@ -9,7 +9,7 @@
 
 | Home Page | Playlist | Player |
 |-----------|----------|--------|
-| ![Home](https://via.placeholder.com/300x200.png?text=Home) | ![Playlist](https://via.placeholder.com/300x200.png?text=Playlist) | ![Player](https://via.placeholder.com/300x200.png?text=Player) |
+| ![Home](assets/home_screen.png) | ![Playlist](assets/playlist.png) | ![Player](assets/player.png) |
 
 ---
 
