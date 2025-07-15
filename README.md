@@ -60,6 +60,21 @@ npm start
 
 ---
 
+## 🔑 Environment Variables (.env)
+
+Create a `.env` file in the root of your project with the following structure:
+
+```env
+SPOTIFY_CLIENT_ID=your_spotify_client_id
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+```
+
+> You can get these values from your Spotify Developer Dashboard: https://developer.spotify.com/dashboard
+
+**Never commit your .env file to version control!**
+
+---
+
 ## 🎵 Features
 
 - 🎧 Mood-based playlists and discovery
