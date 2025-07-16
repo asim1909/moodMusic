@@ -52,7 +52,7 @@
 
 ```bash
 git clone https://github.com/asim1909/moodMusic.git
-cd your-repo-name
+cd moodMusic
 npm install
 npm start
 ```
