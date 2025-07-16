@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Image, StyleSheet, Animated, ActivityIndicator, Share, ScrollView } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Image, StyleSheet, Animated, ActivityIndicator, Share, ScrollView, Pressable, PanResponder } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown, Heart, Play, Pause, SkipBack, SkipForward, Shuffle, Share2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -57,13 +57,24 @@ const PlayerScreen = ({ navigation }) => {
     progressAnim.setValue(0);
   }, [currentTrack]);
 
+  const [progressBarWidth, setProgressBarWidth] = useState(0);
+
+  // Tap-to-seek handler (for Pressable)
+  const handleSeek = (evt) => {
+    if (progressBarWidth > 0) {
+      const { locationX } = evt.nativeEvent;
+      const newProgress = Math.max(0, Math.min(1, locationX / progressBarWidth));
+      setProgress(newProgress);
+    }
+  };
+
+  // Timer for auto-progress
   useEffect(() => {
     let interval;
     if (isPlaying) {
       interval = setInterval(() => {
         setProgress((prev) => {
           if (prev < 1) {
-            progressAnim.setValue(prev + 1 / DURATION);
             return prev + 1 / DURATION;
           } else {
             clearInterval(interval);
@@ -74,6 +85,14 @@ const PlayerScreen = ({ navigation }) => {
     }
     return () => clearInterval(interval);
   }, [isPlaying, currentTrack]);
+
+  // When progress reaches end, go to next track
+  useEffect(() => {
+    if (progress >= 1 && isPlaying) {
+      setProgress(0);
+      nextTrack(playlist);
+    }
+  }, [progress, isPlaying, nextTrack, playlist]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -265,9 +284,22 @@ const PlayerScreen = ({ navigation }) => {
               <Text style={styles.timingText}>{formatTime(progress * DURATION)}</Text>
               <Text style={styles.timingText}>{formatTime(DURATION)}</Text>
             </View>
-            <View style={styles.scrubberBg}>
-              <Animated.View style={[styles.scrubberFill, { width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
-            </View>
+            <Pressable
+              style={styles.scrubberBg}
+              onPress={handleSeek}
+              onLayout={e => setProgressBarWidth(e.nativeEvent.layout.width)}
+            >
+              <View style={{ width: '100%', height: 8, justifyContent: 'center' }}>
+                <View
+                  style={[
+                    styles.scrubberFill,
+                    {
+                      width: progress * progressBarWidth,
+                    },
+                  ]}
+                />
+              </View>
+            </Pressable>
           </View>
 
           {/* Controls */}
@@ -434,15 +466,18 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   scrubberBg: {
-    height: 6,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 3,
+    width: '100%',
+    height: 8,
+    backgroundColor: '#444', // light gray for visibility
+    borderRadius: 4,
     overflow: 'hidden',
+    marginTop: 8,
+    marginBottom: 8,
   },
   scrubberFill: {
-    height: 6,
-    backgroundColor: SPOTIFY_GREEN,
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: '#1DB954', // Spotify green
+    borderRadius: 4,
   },
   controlsRow: {
     flexDirection: 'row',
