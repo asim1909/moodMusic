@@ -1,6 +1,5 @@
 # 🚀 MoodMusicApp
 
-![App Banner](https://via.placeholder.com/1200x400.png?text=MoodMusicApp+Banner)  
 *A beautiful, mood-based music player powered by the Spotify API.*
 
 ---
@@ -30,11 +29,11 @@
 
 ## 🤝 Collaborators
 
-| Name            | GitHub                                            | Email                     |
-|-----------------|---------------------------------------------------|---------------------------|
-| Asim Rana       | [@asim1909](https://github.com/asim1909)          | work.asimrana@gmail.com   |
-| Sudheer kumar   |                                                   |                           |
-| Akash Mishra    |                                                   |                           |
+| Name            | GitHub                                                 | Email                     |
+|-----------------|--------------------------------------------------------|---------------------------|
+| Asim Rana       | [@asim1909](https://github.com/asim1909)               | work.asimrana@gmail.com   |
+| Sudheer kumar   | [@Kumar-sudheer](https://github.com/Kumar-sudheer)     | kumarsudheer0812@gmail.com|
+| Akash Mishra    | [@akashmishra8532](https://github.com/akashmishra8532) | akashmishra0389@gmail.com |
 
 
 ---
