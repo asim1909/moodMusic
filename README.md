@@ -32,8 +32,8 @@
 | Name            | GitHub                                                 | Email                     |
 |-----------------|--------------------------------------------------------|---------------------------|
 | Asim Rana       | [@asim1909](https://github.com/asim1909)               | work.asimrana@gmail.com   |
-| Sudheer kumar   |                                                        |                           |
-| Akash Mishra    |[@akashmishra8532](https://github.com/akashmishra8532)  | akashmishra0389@gmail.com |
+| Sudheer kumar   | [@Kumar-sudheer](https://github.com/Kumar-sudheer)     | kumarsudheer0812@gmail.com|
+| Akash Mishra    | [@akashmishra8532](https://github.com/akashmishra8532) | akashmishra0389@gmail.com |
 
 
 ---
