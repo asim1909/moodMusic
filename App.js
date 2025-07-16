@@ -15,6 +15,7 @@ import PlayerScreen from './screens/PlayerScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
 import MiniPlayer from './components/MiniPlayer';
 import SearchScreen from './screens/SearchScreen';
+import SplashScreen from './screens/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,6 +74,7 @@ const MainTabs = ({ spotifyReleases }) => {
 const AppStack = ({ spotifyReleases }) => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Main">
         {() => <MainTabs spotifyReleases={spotifyReleases} />}
       </Stack.Screen>
