@@ -76,6 +76,7 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
 ## 🎵 Features
 
+- Theme customization (light/dark mode toggle on Home screen, applies to all screens)
 - 🎧 Mood-based playlists and discovery
 - 🔍 Live Spotify search (no mock data!)
 - 🆕 New releases from Spotify

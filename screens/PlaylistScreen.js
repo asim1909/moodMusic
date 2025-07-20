@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, SafeAreaView, TouchableOpacity, Animated } from 'react-native';
 import { fetchSpotifyTracksByMood } from '../spotifyApi';
 import { usePlayer } from '../PlayerContext';
+import { useTheme } from '../ThemeContext';
 
 const SPOTIFY_GREEN = '#1DB954';
 
@@ -10,6 +11,7 @@ export default function PlaylistScreen({ route, navigation }) {
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const { playTrack } = usePlayer();
+  const { theme } = useTheme();
 
   useEffect(() => {
     async function getTracks() {
@@ -91,17 +93,25 @@ export default function PlaylistScreen({ route, navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
-        <Text style={styles.header}>{mood} Songs</Text>
+        <Text style={[styles.header, { color: theme.text }]}>{mood} Songs</Text>
         {loading ? (
-          <ActivityIndicator color={SPOTIFY_GREEN} style={{ marginTop: 40 }} />
+          <ActivityIndicator color={theme.accent} style={{ marginTop: 40 }} />
         ) : (
           <FlatList
             data={tracks}
-            renderItem={renderSong}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={[styles.songItem, { backgroundColor: theme.card }]} onPress={() => handleSongPress(item)}>
+                <Image source={{ uri: item.album?.images[0]?.url || item.artwork }} style={styles.artwork} />
+                <View>
+                  <Text style={[styles.songTitle, { color: theme.text }]}>{item.name || item.title}</Text>
+                  <Text style={[styles.songArtist, { color: theme.secondaryText }]}>{item.artists ? item.artists.map(a => a.name).join(', ') : item.artist}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
             keyExtractor={item => item.id}
-            ListEmptyComponent={<Text style={styles.emptyText}>No songs found.</Text>}
+            ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.secondaryText }]}>No songs found.</Text>}
             contentContainerStyle={[
               styles.listContent,
               tracks.length === 0 ? { flex: 1, justifyContent: 'center' } : null,

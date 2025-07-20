@@ -3,12 +3,14 @@ import { View, Text, SafeAreaView, FlatList, TouchableOpacity, Image, StyleSheet
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePlayer } from '../PlayerContext';
+import { useTheme } from '../ThemeContext';
 
 const SPOTIFY_GREEN = '#1DB954';
 
 const FavoritesScreen = ({ navigation }) => {
   const [favorites, setFavorites] = useState([]);
   const { playTrack } = usePlayer();
+  const { theme } = useTheme();
 
   const loadFavorites = async () => {
     const favs = JSON.parse(await AsyncStorage.getItem('favorites')) || [];
@@ -62,18 +64,20 @@ const FavoritesScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
-        <Text style={styles.header}>Your Favorites</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, marginTop: 16 }}>
+          <Text style={[styles.header, { color: theme.text }]}>Your Favorites</Text>
+        </View>
         {favorites.length > 0 ? (
           <FlatList
             data={favorites}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.songItem} onPress={() => handleSongPress(item)}>
+              <TouchableOpacity style={[styles.songItem, { backgroundColor: theme.card }]} onPress={() => handleSongPress(item)}>
                 <Image source={{ uri: item.artwork }} style={styles.artwork} />
                 <View>
-                  <MarqueeText style={styles.songTitle} containerWidth={200}>{item.title}</MarqueeText>
-                  <MarqueeText style={styles.songArtist} containerWidth={200}>{item.artist}</MarqueeText>
+                  <MarqueeText style={[styles.songTitle, { color: theme.text }]} containerWidth={200}>{item.title}</MarqueeText>
+                  <MarqueeText style={[styles.songArtist, { color: theme.secondaryText }]} containerWidth={200}>{item.artist}</MarqueeText>
                 </View>
               </TouchableOpacity>
             )}
@@ -81,7 +85,7 @@ const FavoritesScreen = ({ navigation }) => {
             contentContainerStyle={styles.listContent}
           />
         ) : (
-          <Text style={styles.emptyText}>You haven't favorited any songs yet.</Text>
+          <Text style={[styles.emptyText, { color: theme.secondaryText }]}>You haven't favorited any songs yet.</Text>
         )}
       </View>
     </SafeAreaView>

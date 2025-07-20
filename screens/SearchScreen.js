@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, S
 import MOCK_DATA from './MOCK_DATA';
 import { usePlayer } from '../PlayerContext';
 import { fetchSpotifyTracksByMood, fetchSpotifyNewReleases } from '../spotifyApi';
+import { useTheme } from '../ThemeContext';
 
 const SPOTIFY_GREEN = '#1DB954';
 
@@ -15,6 +16,7 @@ const SearchScreen = ({ navigation }) => {
   const [newReleases, setNewReleases] = useState([]);
   const [loading, setLoading] = useState(false);
   const { playTrack } = usePlayer();
+  const { theme } = useTheme();
 
   // Fetch new releases on mount
   React.useEffect(() => {
@@ -110,35 +112,39 @@ const SearchScreen = ({ navigation }) => {
     );
   };
 
-  const renderSong = ({ item }) => (
-    <TouchableOpacity style={styles.songItem} onPress={() => handleSongPress(item, results)}>
-      <Image source={{ uri: item.artwork }} style={styles.artwork} />
-      <View>
-        <MarqueeText style={styles.songTitle} containerWidth={200}>{item.title}</MarqueeText>
-        <MarqueeText style={styles.songArtist} containerWidth={200}>{item.artist}</MarqueeText>
-      </View>
-    </TouchableOpacity>
-  );
+  function renderSong({ item, theme }) {
+    return (
+      <TouchableOpacity style={[styles.songItem, { backgroundColor: theme.card }]} onPress={() => handleSongPress(item, query ? results : newReleases)}>
+        <Image source={{ uri: item.artwork }} style={styles.artwork} />
+        <View>
+          <Text style={[styles.songTitle, { color: theme.text }]}>{item.title}</Text>
+          <Text style={[styles.songArtist, { color: theme.secondaryText }]}>{item.artist}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
-        <Text style={styles.header}>Search</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, marginTop: 16 }}>
+          <Text style={[styles.header, { color: theme.text }]}>Search</Text>
+        </View>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.card, color: theme.text, borderColor: theme.border }]}
           placeholder="What do you want to listen to?"
-          placeholderTextColor="#a3a3a3"
+          placeholderTextColor={theme.secondaryText}
           value={query}
           onChangeText={setQuery}
         />
         {loading ? (
-          <ActivityIndicator color={SPOTIFY_GREEN} style={{ marginTop: 40 }} />
+          <ActivityIndicator color={theme.accent} style={{ marginTop: 40 }} />
         ) : (
           <FlatList
             data={query ? results : newReleases}
-            renderItem={renderSong}
+            renderItem={(props) => renderSong({ ...props, theme })}
             keyExtractor={item => item.id}
-            ListEmptyComponent={<Text style={styles.emptyText}>{query ? 'No results found.' : 'No music to show.'}</Text>}
+            ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.secondaryText }]}>{query ? 'No results found.' : 'No music to show.'}</Text>}
             contentContainerStyle={[
               styles.listContent,
               (query ? results : newReleases).length === 0 ? { flex: 1, justifyContent: 'center' } : null,
@@ -154,7 +160,7 @@ const SearchScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'black', // Matches provided style
+    // backgroundColor: 'black', // Matches provided style
   },
   container: {
     flex: 1,
@@ -163,22 +169,22 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   header: {
-    color: 'white',
+    // color: 'white',
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 24,
-    marginTop: 16,
+    // marginBottom: 24,
+    // marginTop: 16,
   },
   input: {
-    backgroundColor: '#222', // Matches songItem background for consistency
-    color: 'white',
+    // backgroundColor: '#222', // Matches songItem background for consistency
+    // color: 'white',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    // borderColor: 'rgba(255,255,255,0.1)',
   },
   songItem: {
     flexDirection: 'row',
@@ -186,7 +192,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     borderRadius: 8,
-    backgroundColor: '#222', // Matches provided style
+    // backgroundColor: '#222', // Matches provided style
   },
   artwork: {
     width: 56,
@@ -195,16 +201,16 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   songTitle: {
-    color: 'white',
+    // color: 'white',
     fontSize: 18,
     fontWeight: '600',
   },
   songArtist: {
-    color: '#a3a3a3',
+    // color: '#a3a3a3',
     fontSize: 14,
   },
   emptyText: {
-    color: '#a3a3a3',
+    // color: '#a3a3a3',
     textAlign: 'center',
     marginTop: 40,
   },

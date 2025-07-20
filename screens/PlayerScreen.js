@@ -7,6 +7,7 @@ import { usePlayer } from '../PlayerContext';
 import MOCK_DATA from './MOCK_DATA';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useRoute } from '@react-navigation/native';
+import { useTheme } from '../ThemeContext';
 
 const allSongs = Object.values(MOCK_DATA.playlists).flat();
 const SPOTIFY_GREEN = '#1DB954';
@@ -25,6 +26,7 @@ const PlayerScreen = ({ navigation }) => {
   const route = useRoute();
   const playlist = route.params?.playlist || allSongs;
   const section = route.params?.section;
+  const { theme, toggleTheme } = useTheme();
 
   // Use real track duration if available, otherwise fallback to 30s
   const DURATION = currentTrack?.duration_ms ? currentTrack.duration_ms / 1000 : 30;
@@ -231,21 +233,22 @@ const PlayerScreen = ({ navigation }) => {
   }
 
   return (
-    <LinearGradient colors={['#191414', '#121212']} style={styles.gradient}>
-      <SafeAreaView style={styles.safeArea}>
+    <LinearGradient colors={theme.mode === 'dark' ? ['#191414', '#121212'] : ['#fff', '#f2f2f2']} style={[styles.gradient, { backgroundColor: theme.background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.headerRow}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <ChevronDown color="white" size={30} />
+              <ChevronDown color={theme.text} size={30} />
             </TouchableOpacity>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={styles.nowPlaying}>Now Playing</Text>
-              {section && (
-                <Text style={styles.sectionText}>from {section}</Text>
-              )}
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 16 }}>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={[styles.nowPlaying, { color: theme.text }]}>Now Playing</Text>
+                {section && (
+                  <Text style={[styles.sectionText, { color: theme.accent }]}>from {section}</Text>
+                )}
+              </View>
             </View>
-            <View style={styles.headerSpacer} />
           </View>
 
           {/* Artwork with swipe gesture */}
@@ -269,11 +272,11 @@ const PlayerScreen = ({ navigation }) => {
 
           {/* Song Info & Heart */}
           <View style={styles.songInfoBlock}>
-            <MarqueeText style={styles.songTitle} containerWidth={300}>{currentTrack.title}</MarqueeText>
+            <MarqueeText style={[styles.songTitle, { color: theme.text }]} containerWidth={300}>{currentTrack.title}</MarqueeText>
             <View style={styles.songMetaRow}>
-              <MarqueeText style={styles.songArtist} containerWidth={260}>{currentTrack.artist}</MarqueeText>
+              <MarqueeText style={[styles.songArtist, { color: theme.secondaryText }]} containerWidth={260}>{currentTrack.artist}</MarqueeText>
               <TouchableOpacity onPress={toggleFavorite} style={styles.heartButton}>
-                <Heart color={isFavorite ? '#1DB954' : 'white'} size={26} fill={isFavorite ? '#1DB954' : 'none'} />
+                <Heart color={isFavorite ? theme.accent : theme.text} size={26} fill={isFavorite ? theme.accent : 'none'} />
               </TouchableOpacity>
             </View>
           </View>
@@ -281,11 +284,11 @@ const PlayerScreen = ({ navigation }) => {
           {/* Progress Bar */}
           <View style={styles.progressBlock}>
             <View style={styles.progressRow}>
-              <Text style={styles.timingText}>{formatTime(progress * DURATION)}</Text>
-              <Text style={styles.timingText}>{formatTime(DURATION)}</Text>
+              <Text style={[styles.timingText, { color: theme.secondaryText }]}>{formatTime(progress * DURATION)}</Text>
+              <Text style={[styles.timingText, { color: theme.secondaryText }]}>{formatTime(DURATION)}</Text>
             </View>
             <Pressable
-              style={styles.scrubberBg}
+              style={[styles.scrubberBg, { backgroundColor: theme.scrubberBg }]}
               onPress={handleSeek}
               onLayout={e => setProgressBarWidth(e.nativeEvent.layout.width)}
             >
@@ -295,6 +298,7 @@ const PlayerScreen = ({ navigation }) => {
                     styles.scrubberFill,
                     {
                       width: progress * progressBarWidth,
+                      backgroundColor: theme.scrubberFill,
                     },
                   ]}
                 />
@@ -305,34 +309,34 @@ const PlayerScreen = ({ navigation }) => {
           {/* Controls */}
           <View style={styles.controlsRow}>
             <TouchableOpacity onPress={handleShuffle} style={styles.sideButton}>
-              <Shuffle color="#b3b3b3" size={28} />
+              <Shuffle color={theme.secondaryText} size={28} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => prevTrack(playlist)}>
-              <SkipBack color="white" size={38} />
+              <SkipBack color={theme.text} size={38} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
-              {isPlaying ? <Pause color="black" size={32} fill="black" /> : <Play color="black" size={32} fill="black" />}
+            <TouchableOpacity style={[styles.playButton, { backgroundColor: theme.accent, shadowColor: theme.accent }]} onPress={togglePlayback}>
+              {isPlaying ? <Pause color={theme.mode === 'dark' ? 'black' : 'white'} size={32} fill={theme.mode === 'dark' ? 'black' : 'white'} /> : <Play color={theme.mode === 'dark' ? 'black' : 'white'} size={32} fill={theme.mode === 'dark' ? 'black' : 'white'} />}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => nextTrack(playlist)}>
-              <SkipForward color="white" size={38} />
+              <SkipForward color={theme.text} size={38} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleShare} style={styles.sideButton}>
-              <Share2 color="#b3b3b3" size={28} />
+              <Share2 color={theme.secondaryText} size={28} />
             </TouchableOpacity>
           </View>
 
           {/* Artist Info */}
           {artistInfo && (
             <View style={styles.artistInfoBlock}>
-              <Text style={styles.sectionTitle}>About the Artist</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>About the Artist</Text>
               <View style={styles.artistInfoRow}>
                 <Image
                   source={{ uri: artistInfo.image }}
                   style={styles.artistImage}
                 />
                 <View style={styles.artistTextContainer}>
-                  <MarqueeText style={styles.artistName} containerWidth={220}>{artistInfo.name}</MarqueeText>
-                  <Text style={styles.artistBio} numberOfLines={4}>{artistInfo.bio}</Text>
+                  <MarqueeText style={[styles.artistName, { color: theme.text }]} containerWidth={220}>{artistInfo.name}</MarqueeText>
+                  <Text style={[styles.artistBio, { color: theme.secondaryText }]} numberOfLines={4}>{artistInfo.bio}</Text>
                 </View>
               </View>
             </View>
@@ -341,11 +345,11 @@ const PlayerScreen = ({ navigation }) => {
           {/* Recommendations */}
           {recommendations.length > 0 && (
             <View style={styles.recommendationsBlock}>
-              <Text style={styles.sectionTitle}>Recommended Tracks</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Recommended Tracks</Text>
               {recommendations.map((track) => (
                 <TouchableOpacity
                   key={track.id}
-                  style={styles.recommendationItem}
+                  style={[styles.recommendationItem, { backgroundColor: theme.card }]}
                   onPress={() => navigation.navigate('Player', { playlist, section, track })}
                 >
                   <Image
@@ -353,8 +357,8 @@ const PlayerScreen = ({ navigation }) => {
                     style={styles.recommendationImage}
                   />
                   <View style={styles.recommendationText}>
-                    <MarqueeText style={styles.recommendationTitle} containerWidth={200}>{track.title}</MarqueeText>
-                    <MarqueeText style={styles.recommendationArtist} containerWidth={200}>{track.artist}</MarqueeText>
+                    <MarqueeText style={[styles.recommendationTitle, { color: theme.text }]} containerWidth={200}>{track.title}</MarqueeText>
+                    <MarqueeText style={[styles.recommendationArtist, { color: theme.secondaryText }]} containerWidth={200}>{track.artist}</MarqueeText>
                   </View>
                 </TouchableOpacity>
               ))}

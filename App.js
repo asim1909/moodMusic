@@ -8,6 +8,7 @@ import { fetchSpotifyNewReleases } from './spotifyApi';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PlayerProvider, usePlayer } from './PlayerContext';
 import { useIsFocused } from '@react-navigation/native';
+import { ThemeProvider } from './ThemeContext';
 
 import HomeScreen from './screens/HomeScreen';
 import PlaylistScreen from './screens/PlaylistScreen';
@@ -16,6 +17,7 @@ import FavoritesScreen from './screens/FavoritesScreen';
 import MiniPlayer from './components/MiniPlayer';
 import SearchScreen from './screens/SearchScreen';
 import SplashScreen from './screens/SplashScreen';
+import ThemeToggleButton from './components/ThemeToggleButton';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -108,12 +110,14 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PlayerProvider>
-        <NavigationContainer>
-          <StatusBar barStyle="light-content" />
-          <AppStack spotifyReleases={spotifyReleases} />
-        </NavigationContainer>
-      </PlayerProvider>
+      <ThemeProvider>
+        <PlayerProvider>
+          <NavigationContainer>
+            <StatusBar barStyle="light-content" />
+            <AppStack spotifyReleases={spotifyReleases} />
+          </NavigationContainer>
+        </PlayerProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

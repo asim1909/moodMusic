@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, SafeAreaView, FlatList, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../ThemeContext';
 
 const MOODS = [
   { id: 'happy', title: 'Happy', emoji: '😄', color: ['#ff6b6b', '#ff9f43'] }, 
@@ -15,6 +17,7 @@ const MOODS = [
 
 const MoodCard = ({ mood, onPress }) => {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const { theme } = useTheme();
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -44,7 +47,7 @@ const MoodCard = ({ mood, onPress }) => {
     >
       <Animated.View style={[styles.moodCardInner, { transform: [{ scale: scaleAnim }] }]}>
         <LinearGradient colors={mood.color} style={styles.moodGradient}>
-          <Text style={styles.moodTitle}>{mood.title}</Text>
+          <Text style={[styles.moodTitle, { color: theme.text }]}>{mood.title}</Text>
           <Text style={styles.moodEmoji}>{mood.emoji}</Text>
         </LinearGradient>
       </Animated.View>
@@ -53,16 +56,22 @@ const MoodCard = ({ mood, onPress }) => {
 };
 
 const HomeScreen = ({ navigation }) => {
+  const { theme } = useTheme();
   const handleMoodSelect = (moodTitle) => {
     navigation.navigate('Playlist', { mood: moodTitle });
   };
 
   return (
-    <LinearGradient colors={['#191414', '#121212']} style={styles.gradient}>
-      <SafeAreaView style={styles.safeArea}>
+    <LinearGradient colors={theme.mode === 'dark' ? ['#191414', '#121212'] : ['#fff', '#f2f2f2']} style={[styles.gradient, { backgroundColor: theme.background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
         <View style={styles.container}>
-          <Text style={styles.header1}>How are you</Text>
-          <Text style={styles.header2}>feeling today?</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, marginTop: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.header1, { color: theme.text }]}>{'How are you'}</Text>
+              <Text style={[styles.header2, { color: theme.accent }]}>{'feeling today?'}</Text>
+            </View>
+            <ThemeToggleButton />
+          </View>
           <FlatList
             data={MOODS}
             renderItem={({ item }) => <MoodCard mood={item} onPress={handleMoodSelect} />}
@@ -98,14 +107,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.3,
     marginBottom: 4,
-    marginTop: 16,
+    // marginTop: 16, // Removed for compactness
   },
   header2: {
     color: SPOTIFY_GREEN,
     fontSize: 32,
     fontWeight: '700',
     letterSpacing: 0.3,
-    marginBottom: 32,
+    // marginBottom: 32, // Removed for compactness
   },
   moodCard: {
     width: '100%',
